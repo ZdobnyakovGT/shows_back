@@ -3,19 +3,6 @@ from django.shortcuts import render
 from datetime import date
 
 
-def GetCard(request):
-    return render(request, 'card.html')
-
-
-def Base(request):
-    return render(request, 'base.html')
-
-
-
-
-def Info(request):
-    return render(request, 'info.html')
-
 def GetInfo(id=None):
     arr = [
             {'nm': 'Василий Игнатьевич Гриневский', 'im': 'http://127.0.0.1:9000/riplab1/photo/im1.png', 'place':'344ю', 'description': 'Василий Игнатьевич Гриневецкий сыграл выдающуюся роль в развитии отечественного инженерного образования, промышленности, энергетики, экономики. Его коллегами или учениками были такие выдающиеся люди, как аэродинамик и механик Н.Е. Жуковский, механик П.К. Худяков, крупнейший электротехник, организатор МЭИ К. А. Круг, гидродинамик А. И. Астров, механик И.А. Калинников, теплотехники Л. К. Рамзин, Н. Р. Брилинг, Е. К. Мазинг и многие другие деятели науки и техники.', 'id': 1},
@@ -27,41 +14,80 @@ def GetInfo(id=None):
     return arr if id is None else arr[id-1]
 
 
+def GetTime():
+    return [
+        {'nm': 'Владимир Павлович Бармин', 'im': 'http://127.0.0.1:9000/riplab1/photo/im5.png', 'place': '344', 'description': '7 марта 2019 года исполнилось 110 лет со дня рождения Главного конструктора стартовых ракетных комплексов Бармина Владимира Павловича. С именем В.П. Бармина связано становление и развитие в нашей стране научной школы под общим названием – СТАРТОСТРОЕНИЕ.', 'id': 3},
+        {'nm': 'Лыжная Одиссея', 'im': 'http://127.0.0.1:9000/riplab1/photo/im15.png', 'place': '344ю', 'description': "К спортивным достижениям, увековечившим имя МГТУ им. Н.Э.Баумана и ставшим традиционными, по праву можно отнести следующие события: '\n'- организация и проведение Всероссийских 50-километровых лыжных марафонов, которые берут начало в далёком 1962 году и стали одной из традиций любительского лыжного движения нашей страны;'\n'- организация и проведения многодневных лыжных переходов, в том числе по маршруту Москва - Хельсинки - Стокгольм - Осло протяженностью 2200 км. за 22 ходовых дня, в которых лыжникам приходилось работать на грани возможного;", 'id': 4},
+        {'nm': 'Воспитательный дом', 'im': 'http://127.0.0.1:9000/riplab1/photo/im16.png', 'place': '345ю', 'description': '250 лет со дня основания Императорского московского воспитательного дома. Мы хотели бы немного рассказать о его истории.', 'id': 5}
+    ]
 
+
+# def GetShow(request):
+#     if request.method == 'POST':
+#         search_query = request.POST.get('text', '')  # Получаем текст из поля
+#         mainf = GetInfo()  # Получаем все данные
+#         # Фильтруем карточки по запросу
+#         mainf = list(filter(lambda x: search_query.lower() in x['nm'].lower() or search_query.lower() in x['place'].lower(), mainf))
+
+#         return render(request, 'mainf.html', {
+#             'data': {
+#                 'cards': mainf,
+#                 'len': len(GetCart())
+#             },
+#             'search_query': search_query  # Передаем поисковый запрос обратно
+#         })
+#     else:
+#         return render(request, 'mainf.html', {
+#             'data' : {
+#                 'cards': GetInfo(),  # Возвращаем все карточки, если это GET-запрос
+#                 'len': len(GetCart())
+#             }
+#         })
 
 
 def GetShow(request):
-    if request.method == 'POST':
-        search_query = request.POST.get('text', '')  # Получаем текст из поля
-        mainf = GetInfo()  # Получаем все данные
-        # Фильтруем карточки по запросу
-        mainf = list(filter(lambda x: search_query.lower() in x['nm'].lower() or search_query.lower() in x['place'].lower(), mainf))
-
+    if request.method == 'GET':
         return render(request, 'mainf.html', {
             'data': {
-                'cards': mainf
-            },
-            'search_query': search_query  # Передаем поисковый запрос обратно
+                'cards': GetInfo(),
+                'time': GetTime(),
+                'time_counter': 0,
+                'len': len(GetTime())
+            }
         })
-    else:
-        return render(request, 'mainf.html', {
-            'data' : {
-                'cards': GetInfo()  # Возвращаем все карточки, если это GET-запрос
+    elif request.method == 'POST':
+        search_query = request.POST.get('text', '')
+    mainf = GetInfo()
+    mainf = list(filter(lambda x: search_query in x['nm'] or search_query in x['place'], mainf))
+    print(len(GetTime()))
+    return render(request, 'mainf.html', {
+            'data': {
+                'cards': mainf,
+                'Time': GetTime(),
+                'time_counter': 0,
+                'value': str(request.POST.get('text', '')),
+                'len': len(GetTime())
             }
         })
 
 
 
-
-
-def Choose(request):
-    return render(request, 'choose.html', {
-            'data' : {
-                'cart_cards': GetInfo()
-        }})
+# def Choose(request):
+#     return render(request, 'choose.html', {
+#             'data' : {
+#                 'cart_cards': GetCart()
+#         }})
 
 
 
 
 def Info(request, id):
     return render(request, 'info.html', {'data' : GetInfo(id)})
+
+
+def GetCart(request):
+    return render(request, 'choose.html', {
+            'data': {
+                'cart_cards': GetTime()
+            }})
+

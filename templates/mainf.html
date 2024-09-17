@@ -11,7 +11,7 @@
     <!-- Добавляем атрибут value, который будет хранить введённое значение -->
     <input type="text" placeholder="Поиск..." name="text" id="search-id" value="{{ search_query|default:'' }}">
     <button class="right-link">Поиск</button>
-    <a href="/choose/" class="right-link">Ваши выставки</a>
+    <a href="/choose/" class="right-link">Ваши выставки {{ data.len }}</a>
 </form>
 {% endblock %}
 

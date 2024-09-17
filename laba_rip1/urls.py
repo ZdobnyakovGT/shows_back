@@ -20,9 +20,9 @@ from laba_rip12 import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('card/', views.GetCard),
+    # path('card/', views.GetCard),
     path('', views.GetShow),
-    path('choose/', views.Choose),
-    path('info/', views.Info),
+    path('choose/', views.GetCart),
+    # path('info/', views.Info),
     path('info/<int:id>/', views.Info, name='info_url')
 ]
