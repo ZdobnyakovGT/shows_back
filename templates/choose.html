@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+ВАШИ ВЫСТАВКИ
+{% endblock %}
+
+
+
+{% block card %}
+<div class="space" >
+    <div class="cart-card-container" >
+        {% for cart_card in data.cart_cards %}
+            {% include 'cart_card.html' with element=cart_card %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/card.css' %}"/>
+
+<div class="card">
+
+    <img src="{{ element.im }}" alt="{{ element.nm }}">
+    <h3>{{ element.nm }}</h3>
+    <a href="{% url 'info_url' element.id %}">Подробнее</a>
+</div>

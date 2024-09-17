@@ -1,0 +1,12 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/cart_card.css' %}"/>
+
+<div class="card">
+
+    <img src="{{ element.im }}" alt="{{ element.nm }}">
+    <h3>{{ element.nm }}</h3>
+    <p class="place">{{element.place}}</p>
+    <a href="{% url 'info_url' element.id %}" class="card-button">Подробнее</a>
+
+</div>
