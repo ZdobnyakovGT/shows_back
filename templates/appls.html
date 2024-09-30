@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Список книг{% endblock %}
+
+{% block card %}
+<ul>
+    {% for appl in data.appls %}
+    <li>
+    <a href="{% url 'application_url' appl.application_id %}">{{ appl.application_id }}</a>  <!-- Отображаем название книги -->
+    <p>{{ appl.application_id}}</p>  <!-- Краткое описание книги -->
+    </li>
+    {% empty %}
+        <li>Список пуст</li>
+    {% endfor %}
+</ul>
+{% endblock %}
