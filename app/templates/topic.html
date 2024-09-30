@@ -1,0 +1,18 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/topic.css' %}"/>
+
+<div class="card">
+
+    <img src="{{ element.photo_url }}" alt="{{ element.name }}">
+    <h3>{{ element.name }}</h3>
+    <a href="{% url 'info_url' element.topic_id %}">Подробнее</a>
+
+    
+    <form method="post" action="/topic/{{ element.topic_id }}/add_to_show/">
+        {% csrf_token %}
+        <button class="sub_b" type="submit">Добавить</button>
+    </form>
+
+</div>
+  

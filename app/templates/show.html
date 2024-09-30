@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+ВАША ВЫСТАВКИ
+{% endblock %}
+
+
+
+{% block appl %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/show.css' %}"/>
+
+
+<div class="appl">
+    <h2>Выставка №{{ show.show_id }}</h2>
+    <label for="title">Название: <input type="text" id="title" placeholder="Введите название"></label>
+    <label for="date">Дата: <input type="date" id="date"></label>
+    <label for="time">Время: <input type="time" id="time"></label>
+    <label for="auditorium">Аудитория: <input type="text" id="auditorium" placeholder="Введите аудиторию"></label>
+</div>
+
+<div class="save-button-container">
+    <button type="submit" class="save-button">Сохранить</button>
+
+<form method="post" action="/show/{{ show.show_id }}/delete/">
+    {% csrf_token %}
+        <button class="del-button" type="submit">Удалить</button>
+</form>
+
+</div>
+
+{% endblock %}
+
+
+{% block control %}
+
+
+
+{% endblock %}
+
+{% block card %}
+<div class="space" > 
+    <div class="cart-card-container" >
+        {% for topic in show.get_topics %}
+            {% include 'show_topic.html' %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

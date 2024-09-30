@@ -1,0 +1,13 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/show_topic.css' %}"/>
+
+<div class="card">
+    <img src="{{ topic.photo_url }}" alt="{{ topic.name }}">
+    <h3>{{ topic.name }}</h3>
+    <a href="{% url 'info_url' topic.topic_id %}" class="card-button">Подробнее</a>
+    <input type="checkbox" class="card-checkbox">
+</div>
+ 
+
+

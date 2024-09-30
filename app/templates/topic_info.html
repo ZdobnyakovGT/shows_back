@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+ИНФОРМАЦИЯ
+{% endblock %}
+
+
+{% block card %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/topic_info.css' %}">
+<div class="space" >
+    <div class="info">
+        <img src="{{ data.photo_url }}" class="image-inf">
+        <a>
+            <p class="name">{{ data.name }}</p>
+            <p class="description">{{data.description}}</p>
+        </a>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,57 @@
+.save-button-container {
+    display: flex;
+    justify-content: center; /* Центрирует кнопку по горизонтали */
+}
+
+.save-button {
+    background-color: #4CAF50; /* Цвет кнопки */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #0e4466;
+    margin-top: 20px;
+
+    /* margin-left: 600px; */
+}
+
+.del-button {
+    background-color: #4CAF50; /* Цвет кнопки */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #0e4466;
+    margin-top: 20px;
+    margin-left: 20px;
+
+    /* margin-left: 600px; */
+}
+
+
+.appl{
+    height: 80px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+
+    background-color: #d0b175;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 1390px;
+    margin-left: 25px;
+    margin-top: 50px;
+
+    padding-left: 20px;
+    padding-right: 20px;
+
+    color: aliceblue;
+
+}

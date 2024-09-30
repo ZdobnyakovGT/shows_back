@@ -16,15 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from myapp import views
+from app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.GetShow),
     path('info/<int:id>/', views.Info, name='info_url'),
-    # path('', views.applicationList),
-    # path('application/<int:id>/', views.GetApplication, name='application_url')
-    path('show/<int:id>/', views.GetCartById, name='cart_by_id'),
+    path('show/<int:show_id>/', views.show, name='cart_by_id'),
+    path('topic/<int:topic_id>/add_to_show/', views.add_topic),
+    path('show/<int:show_id>/delete/', views.delete_show)
 ]
 
-#SSR
+#DB

@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  django:
+    build: .
+    container_name: django
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./:/usr/src/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - pgdb
+      - minio
+
+  pgdb:
+    image: postgres
+    container_name: pgdb
+    environment:
+      - POSTGRES_DB=shows
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgdbdata:/var/lib/postgresql/data
+
+    ports:
+      - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin@pgadmin.com
+      PGADMIN_DEFAULT_PASSWORD: pgadmin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    volumes:
+       - pgadmin:/var/www/nest_test/docker-volumes/pgadmin
+       - ./servers.json:/pgadmin4/servers.json
+       - ./pgpass:/pgpass
+    ports:
+      - 127.0.0.1:5050:80
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:RELEASE.2022-10-15T19-57-03Z
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./minio_storage:/data
+    command: server --console-address ":9001" /data
+    env_file: .env
+    restart: always
+
+
+volumes:
+  pgdbdata: null
+  pgadmin: 

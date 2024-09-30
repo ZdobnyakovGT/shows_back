@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'myapp',
+    'app',
 ]
 
 MIDDLEWARE = [
@@ -77,13 +77,14 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'student', # Имя вашей БД. Если вы создали черезе psql или IDE свою базу и хотите использовать его - пропишите его имя здесь
+        'NAME': 'shows',  # Это имя базы данных, которое вы указали в docker-compose.yml
         'USER': 'postgres',
-        'PASSWORD': '2004',
-        'HOST': 'localhost',
-        'PORT': 5432, # Стандартный порт PostgreSQL
+        'PASSWORD': 'postgres',
+        'HOST': 'pgdb',  # Имя контейнера PostgreSQL
+        'PORT': '5432',
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -107,7 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
 
@@ -121,10 +122,15 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / "app/static",
 ]
 
+
+# STATICFILES_DIRS = [
+#     BASE_DIR / "usr/src/app/static",
+# ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

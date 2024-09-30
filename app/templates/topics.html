@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+ВЫБОР ТЕМ
+{% endblock %}
+
+{% block search %}
+<form action="" method="get">
+    <input type="text" placeholder="Поиск..." name="search-theme" id="search-id" value="{{ topics_s|default:'' }}">
+    <button class="right-link">Поиск</button>
+    {% if draft_show and draft_show.show_id %}
+        <a href="{% url 'cart_by_id' show_id=draft_show.show_id %}" class="right-link">Корзина: {{ topic_count }}</a>
+    {% else %}
+        <a class="right-link disabled">Корзина: {{ 0 }}</a>
+    {% endif %}
+</form>
+{% endblock %}
+
+{% block card %}
+<div class="space" >
+    <div class="card-container" >
+        {% for card in topics %}
+            {% include 'topic.html' with element=card %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
