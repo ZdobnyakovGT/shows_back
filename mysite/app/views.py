@@ -8,6 +8,8 @@ import psycopg2
 
 # cursor = conn.cursor()
 
+
+
  
 # cursor.execute("INSERT INTO public.books (id, name, description) VALUES(1, 'Мастер и Маргарита', 'Крутая книга')")
  
