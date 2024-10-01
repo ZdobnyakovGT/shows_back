@@ -8,31 +8,6 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 
-
-# def GetInfo(id=None):
-#     topics = Topics.objects.values('name', 'photo_url', 'description', 'topic_id', 'status').order_by('topic_id')
-#     topics_list = list(topics)
-#     print(topics_list)
-#     return topics_list if id is None else topics_list[id-1]
-
-
-# def GetTime():
-#     return {'id' : '1',
-#             'count' : '',
-#             'name' : '',
-#             'place' : '',
-#             'date' : '',
-#             'time' :  '',
-
-#             'data' : [
-#                 {'info' : GetInfo(4)},
-#                 {'info' : GetInfo(7)},
-#                 {'info' : GetInfo(8)}
-#     ]}
-
-
-
-
 #основная страница
 def GetShow(request):
 
@@ -52,17 +27,6 @@ def GetShow(request):
     return render(request, "topics.html", context)
 
 
- # корзина
-# def GetCartById(request, id):
-#     show = GetTime()
-#     return render(request, 'show.html', {
-#         'data': {
-#             'show_topic': show['data'],
-#         }
-#     })
-
-
-
 # корзина
 def show(request, show_id):
     context = {
@@ -70,7 +34,6 @@ def show(request, show_id):
     }
 
     return render(request, "show.html", context)
-
 
 
 #подробнее
@@ -81,8 +44,8 @@ def Info(request, id):
 
 #черновик
 def get_draft_show():
-
-    return Shows.objects.filter(status='1').first()
+    current_user = get_current_user()
+    return Shows.objects.filter(creator=current_user, status=1).first()
 
 #добавить
 def add_topic(request, topic_id):
@@ -90,13 +53,10 @@ def add_topic(request, topic_id):
     draft_show = get_draft_show()
 
     if draft_show is None:
-        draft_show = Shows.objects.create()
-        
-        draft_show.creator = get_current_user().id
-
-
-
-        draft_show.created_at = timezone.now()
+        draft_show = Shows.objects.create(
+            creator = get_current_user(),
+            created_at = timezone.now()
+        )
         draft_show.save()
 
 
@@ -119,7 +79,7 @@ def get_current_user():
 
 # удалить
 def delete_show(request, show_id):
-    show = get_object_or_404(Shows, pk=show_id)  # Получаем шоу или возвращаем 404
-    show.status = 5  # Меняем статус
-    show.save()  # Сохраняем изменения
+    with connection.cursor() as cursor:
+        cursor.execute("UPDATE shows SET status = 5 WHERE show_id = %s", [show_id])
+
     return redirect("/")
