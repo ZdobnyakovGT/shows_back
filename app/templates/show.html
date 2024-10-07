@@ -1,60 +1,60 @@
 {% extends 'base.html' %}
-
 {% load static %}
 
 {% block title %}
-ВАША ВЫСТАВКИ
+    {% if show.status == 'removed' %}
+        Страница не найдена
+    {% else %}
+        ВАША ВЫСТАВКА
+    {% endif %}
 {% endblock %}
-
-
 
 {% block appl %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/show.css' %}"/>
+    {% if show.status == 5 %}
+        <h2>Страница не найдена</h2>
+        <p>К сожалению, выставка была удалена или недоступна.</p>
+    {% else %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/show.css' %}"/>
 
+        <div class="appl">
+            <h2>Выставка №{{ show.show_id }}</h2>
+            <label for="title">Название: 
+                <input type="text" id="title" placeholder="Введите название" value="{{ show.show_name|default_if_none:'' }}">
+            </label>
+            
+            <label for="date">Дата: 
+                <input type="date" id="date" value="{{ show.show_date|date:'Y-m-d' }}">
+            </label>
 
-<div class="appl">
-    <h2>Выставка №{{ show.show_id }}</h2>
-    <label for="title">Название: <input type="text" id="title" placeholder="Введите название" value="{{ show.show_name|default_if_none:'' }}"></label>
-    
-    <label for="date">Дата: 
-        <input type="date" id="date" value="{{ show.show_date|date:"Y-m-d" }}">
-    </label>
+            <label for="time">Время: 
+                <input type="time" id="time" value="{{ show.show_time|default_if_none:'' }}">
+            </label>
+            
+            <label for="auditorium">Аудитория: 
+                <input type="text" id="auditorium" placeholder="Введите аудиторию" value="{{ show.show_place|default_if_none:'' }}">
+            </label>
+        </div>
 
-    <label for="time">Время: 
-        <input type="time" id="time" value="{{ show.show_time|default_if_none:'' }}">
-    </label>
-    
-    <label for="auditorium">Аудитория: 
-        <input type="text" id="auditorium" placeholder="Введите аудиторию" value="{{ show.show_place|default_if_none:'' }}">
-    </label>
-</div>
-
-<div class="save-button-container">
-    <!-- <button type="submit" class="save-button">Сохранить</button> -->
-
-<form method="post" action="/show/{{ show.show_id }}/delete/">
-    {% csrf_token %}
-        <button class="del-button" type="submit">Удалить</button>
-</form>
-
-</div>
-
+        <div class="save-button-container">
+            <form method="post" action="/show/{{ show.show_id }}/delete/">
+                {% csrf_token %}
+                <button class="del-button" type="submit">Удалить</button>
+            </form>
+        </div>
+    {% endif %}
 {% endblock %}
 
-
 {% block control %}
-
-
-
 {% endblock %}
 
 {% block card %}
-<div class="space" > 
-    <div class="cart-card-container" >
-        {% for topic in show.get_topics %}
-            {% include 'show_topic.html' %}
-        {% endfor %}
-    </div>
-</div>
+    {% if show.status != 5 %}
+        <div class="space"> 
+            <div class="cart-card-container">
+                {% for topic in show.get_topics %}
+                    {% include 'show_topic.html' %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
-
