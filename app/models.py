@@ -8,7 +8,8 @@ class ShowTopic(models.Model):
     mm_id = models.AutoField(primary_key=True)
     topic = models.ForeignKey('Topics', models.DO_NOTHING, db_column='topic', blank=True, null=True)
     showw = models.ForeignKey('Shows', models.DO_NOTHING, db_column='showw', blank=True, null=True)
-    topic_count = models.IntegerField(blank=True, null=True)
+    is_main = models.IntegerField(choices=STATUS_CHOICES, default=0,blank=True, null=True)
+
 
     class Meta:
         db_table = 'show_topic'
@@ -27,7 +28,6 @@ class Shows(models.Model):
     show_time = models.TimeField(blank=True, null=True)
     show_name = models.CharField(max_length=100, blank=True, null=True)
     show_place = models.CharField(max_length=100, blank=True, null=True)
-    main_topic = models.CharField(max_length=100, blank=True, null=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=1,blank=True, null=True)
 
     class Meta:
@@ -40,7 +40,6 @@ class Shows(models.Model):
 
         for item in ShowTopic.objects.filter(showw=self):
             tmp = item.topic
-            tmp.count = item.topic_count
             res.append(tmp)
 
         return res
