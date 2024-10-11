@@ -5,15 +5,15 @@ urlpatterns = [
     # Набор методов для услуг
     path('api/topics/search/', search_topic),  # GET
     path('api/topics/<int:topic_id>/', get_topic_by_id),  # GET
-    path('api/topics/<int:topic_id>/image/', get_topic_image),  # GET
+    # path('api/topics/<int:topic_id>/image/', get_topic_image),  # GET
     path('api/topics/<int:topic_id>/update/', update_topic),  # PUT
-    path('api/topics/<int:topic_id>/update_image/', update_topic_image),  # PUT
+    path('api/topics/<int:topic_id>/update_image/', update_topic_image),  # POST
     path('api/topics/<int:topic_id>/delete/', delete_topic),  # DELETE
     path('api/topics/create/', create_topic),  # POST
     path('api/topics/<int:topic_id>/add_to_show/', add_topic_to_show),  # POST
 
     # Набор методов для заявок
-    # path('api/shows/search/', search_expeditions),  # GET
+    path('api/shows/search/', search_shows),  # GET
     path('api/shows/<int:show_id>/', get_show_by_id),  # GET
     path('api/shows/<int:show_id>/update/', update_show),  # PUT
     path('api/shows/<int:show_id>/update_status_user/', update_status_user),  # PUT

@@ -20,7 +20,7 @@ class ShowTopic(models.Model):
 
 class Shows(models.Model):
     show_id = models.AutoField(primary_key=True)
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
     submitted_at = models.DateTimeField(blank=True, null=True)
     completed_at = models.DateTimeField(blank=True, null=True)
     creator = models.ForeignKey(User, models.DO_NOTHING, db_column='creator')
@@ -51,15 +51,15 @@ class Shows(models.Model):
 
 class Topics(models.Model):
     STATUS_CHOICES = (
-        ('active', 'Действует'),
-        ('removed', 'Удалена'),
+        ('1', 'Действует'),
+        ('0', 'Удалена'),
     )
     
     topic_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, blank=True, null=True)
     description = models.CharField(max_length=500, blank=True, null=True)
     photo_url = models.CharField(max_length=100, blank=True, null=True)
-    status = models.CharField(max_length=100, choices=STATUS_CHOICES, default='active')  # Используйте choices
+    status = models.CharField(max_length=100, choices=STATUS_CHOICES, default='1')  # Используйте choices
 
     class Meta:
         db_table = 'topics'

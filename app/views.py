@@ -10,6 +10,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.utils.dateparse import parse_datetime
 from .serializers import *
 
 
@@ -114,8 +115,8 @@ def get_moderator():
 #поиск
 @api_view(["GET"])
 def search_topic(request):
-    query = request.GET.get("search-theme", "")
-    topics = Topics.objects.filter(name__icontains=query).filter(status='1')
+    query = request.GET.get("query", "")
+    topics = Topics.objects.filter(status='1').filter(name__icontains=query)
 
     serializer = TopicSerializer(topics, many=True)
 
@@ -123,7 +124,7 @@ def search_topic(request):
 
     resp = {
         "topics": serializer.data,
-        "draft_show": draft_show.pk if draft_show else None
+        "draft_show": draft_show.show_id if draft_show else None
     }
 
     return Response(resp)
@@ -149,9 +150,9 @@ def update_topic(request, topic_id):
 
     topic = Topics.objects.get(pk=topic_id)
 
-    image = request.data.get("image")
-    if image is not None:
-        topic.image = image
+    name = request.data.get("name")
+    if name is not None:
+        topic.name = name
         topic.save()
 
     serializer = TopicSerializer(topic, data=request.data, many=False, partial=True)
@@ -179,7 +180,7 @@ def delete_topic(request, topic_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     topic = Topics.objects.get(pk=topic_id)
-    topic.status = 2
+    topic.status = '0'
     topic.save()
 
     topics = Topics.objects.filter(status=1)
@@ -191,20 +192,21 @@ def delete_topic(request, topic_id):
 #добавление
 @api_view(["POST"])
 def add_topic_to_show(request, topic_id):
-    if not Topics.objects.filter(pk=topic_id).exists():
+    if not Topics.objects.filter(topic_id=topic_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    topic = Topics.objects.get(pk=topic_id)
+    topic = Topics.objects.get(topic_id=topic_id)
 
     draft_show = get_draft_show()
 
     if draft_show is None:
-        draft_show = Shows.objects.create()
-        draft_show.creator = get_user()
-        draft_show.created_at = timezone.now()
+        draft_show = Shows.objects.create(
+            creator=get_user()
+        )
         draft_show.save()
 
-    if ShowTopic.objects.filter(expedition=draft_show, topic=topic).exists():
+
+    if ShowTopic.objects.filter(showw=draft_show, topic=topic).exists():
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
     item = ShowTopic.objects.create()
@@ -230,16 +232,16 @@ def get_topic_image(request, topic_id):
 
 
 # изменить избр
-@api_view(["PUT"])
+@api_view(["POST"])
 def update_topic_image(request, topic_id):
-    if not Topics.objects.filter(pk=topic_id).exists():
+    if not Topics.objects.filter(topic_id=topic_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    topic = Topics.objects.get(pk=topic_id)
+    topic = Topics.objects.get(topic_id=topic_id)
 
-    image = request.data.get("image")
+    image = request.data.get("photo_url")
     if image is not None:
-        topic.image = image
+        topic.photo_url = image
         topic.save()
 
     serializer = TopicSerializer(topic)
@@ -248,36 +250,36 @@ def update_topic_image(request, topic_id):
 
 
 
-# @api_view(["GET"])
-# def search_shows(request):
-#     status = int(request.GET.get("status", 0))
-#     date_formation_start = request.GET.get("date_formation_start")
-#     date_formation_end = request.GET.get("date_formation_end")
+@api_view(["GET"])
+def search_shows(request):
+    status = int(request.GET.get("status", 0))
+    date_formation_start = request.GET.get("date_formation_start")
+    date_formation_end = request.GET.get("date_formation_end")
 
-#     expeditions = Expedition.objects.exclude(status__in=[1, 5])
+    shows = Shows.objects.exclude(status__in=[1, 5])
 
-#     if status > 0:
-#         expeditions = expeditions.filter(status=status)
+    if status > 0:
+        shows = shows.filter(status=status)
 
-#     if date_formation_start and parse_datetime(date_formation_start):
-#         expeditions = expeditions.filter(date_formation__gte=parse_datetime(date_formation_start))
+    if date_formation_start and parse_datetime(date_formation_start):
+        shows = shows.filter(date_formation__gte=parse_datetime(date_formation_start))
 
-#     if date_formation_end and parse_datetime(date_formation_end):
-#         expeditions = expeditions.filter(date_formation__lt=parse_datetime(date_formation_end))
+    if date_formation_end and parse_datetime(date_formation_end):
+        shows = shows.filter(date_formation__lt=parse_datetime(date_formation_end))
 
-#     serializer = ExpeditionsSerializer(expeditions, many=True)
+    serializer = ShowsSerializer(shows, many=True)
 
-#     return Response(serializer.data)
+    return Response(serializer.data)
 
 
 # заявка
 @api_view(["GET"])
 def get_show_by_id(request, show_id):
-    if not Shows.objects.filter(pk=show_id).exists():
+    if not Shows.objects.filter(show_id=show_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    show = Shows.objects.get(pk=show_id)
-    serializer = ShowSerializer(show, many=False)
+    showw = Shows.objects.get(show_id=show_id)
+    serializer = ShowSerializer(showw, many=False)
 
     return Response(serializer.data)
 
@@ -285,10 +287,10 @@ def get_show_by_id(request, show_id):
 # обновить заявку
 @api_view(["PUT"])
 def update_show(request, show_id):
-    if not Shows.objects.filter(pk=show_id).exists():
+    if not Shows.objects.filter(show_id=show_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    show = Shows.objects.get(pk=show_id)
+    show = Shows.objects.get(show_id=show_id)
     serializer = ShowSerializer(show, data=request.data, many=False, partial=True)
 
     if serializer.is_valid():
@@ -300,10 +302,10 @@ def update_show(request, show_id):
 #  статус подтвержено
 @api_view(["PUT"])
 def update_status_user(request, show_id):
-    if not Shows.objects.filter(pk=show_id).exists():
+    if not Shows.objects.filter(show_id=show_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    show = Shows.objects.get(pk=show_id)
+    show = Shows.objects.get(show_id=show_id)
 
     if show.status != 1:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -320,7 +322,7 @@ def update_status_user(request, show_id):
 # статус выполнено
 @api_view(["PUT"])
 def update_status_admin(request, show_id):
-    if not Shows.objects.filter(pk=show_id).exists():
+    if not Shows.objects.filter(show_id=show_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     request_status = int(request.data["status"])
@@ -328,7 +330,7 @@ def update_status_admin(request, show_id):
     if request_status not in [3, 4]:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    show = Shows.objects.get(pk=show_id)
+    show = Shows.objects.get(show_id=show_id)
 
     if show.status != 2:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -346,10 +348,10 @@ def update_status_admin(request, show_id):
 # удаление заявки
 @api_view(["DELETE"])
 def delete_show(request, show_id):
-    if not Shows.objects.filter(pk=show_id).exists():
+    if not Shows.objects.filter(show_id=show_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    show = Shows.objects.get(pk=show_id)
+    show = Shows.objects.get(show_id=show_id)
 
     if show.status != 1:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -371,7 +373,7 @@ def delete_topic_from_show(request, show_id, topic_id):
     item = ShowTopic.objects.get(show_id=show_id, topic_id=topic_id)
     item.delete()
 
-    show = Shows.objects.get(pk=show_id)
+    show = Shows.objects.get(show_id=show_id)
 
     serializer = ShowSerializer(show, many=False)
     topics = serializer.data["topics"]

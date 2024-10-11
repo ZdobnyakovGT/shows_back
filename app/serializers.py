@@ -20,9 +20,10 @@ class ShowSerializer(serializers.ModelSerializer):
     def get_moderator(self, show):
         if show.moderator:
             return show.moderator.username
+        
             
-    def get_climbers(self, show):
-        items = ShowTopic.objects.filter(show=show)
+    def get_topics(self, show):
+        items = ShowTopic.objects.filter(showw=show)
         serializer = TopicSerializer([item.topic for item in items], many=True)
         return serializer.data
 
@@ -35,8 +36,8 @@ class ShowsSerializer(serializers.ModelSerializer):
     creator = serializers.SerializerMethodField()
     moderator = serializers.SerializerMethodField()
 
-    def get_creator(self, expedition):
-        return expedition.creator.username
+    def get_creator(self, show):
+        return show.creator.username
 
     def get_moderator(self, show):
         if show.moderator:
