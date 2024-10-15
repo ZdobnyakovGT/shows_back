@@ -21,9 +21,8 @@ def GetShow(request):
     }
 
     if draft_show:
-        context["topic_count"] = len(draft_show.get_topics())
+        context["topic_count"] = ShowTopic.objects.filter(showw=draft_show).count()
         context["draft_show"] = draft_show
-
     return render(request, "topics.html", context)
 
 
