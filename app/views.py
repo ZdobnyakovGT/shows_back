@@ -366,14 +366,14 @@ def delete_show(request, show_id):
 
 # удвление из заявки
 @api_view(["DELETE"])
-def delete_topic_from_show(request, show_id, topic_id):
-    if not ShowTopic.objects.filter(show_id=show_id, topic_id=topic_id).exists():
+def delete_topic_from_show(request, showw, topic_id):
+    if not ShowTopic.objects.filter(showw=showw, topic_id=topic_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    item = ShowTopic.objects.get(show_id=show_id, topic_id=topic_id)
+    item = ShowTopic.objects.get(showw=showw, topic_id=topic_id)
     item.delete()
 
-    show = Shows.objects.get(show_id=show_id)
+    show = Shows.objects.get(show_id=showw)
 
     serializer = ShowSerializer(show, many=False)
     topics = serializer.data["topics"]
