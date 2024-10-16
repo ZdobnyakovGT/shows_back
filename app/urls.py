@@ -18,7 +18,7 @@ urlpatterns = [
     path('api/shows/<int:show_id>/update/', update_show),  # PUT
     path('api/shows/<int:show_id>/update_status_user/', update_status_user),  # PUT
     path('api/shows/<int:show_id>/update_status_admin/', update_status_admin),  # PUT
-    path('api/shows/<int:showw_id>/delete/', delete_show),  # DELETE
+    path('api/shows/<int:show_id>/delete/', delete_show),  # DELETE
 
     # Набор методов для м-м
     path('api/shows/<int:show_id>/update_topic/<int:topic_id>/', update_topic_in_show),  # PUT

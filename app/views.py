@@ -388,10 +388,12 @@ def delete_topic_from_show(request, showw, topic_id):
 # изменить тему в выставке
 @api_view(["PUT"])
 def update_topic_in_show(request, show_id, topic_id):
-    if not ShowTopic.objects.filter(climber_id=topic_id, expedition_id=show_id).exists():
+    if not ShowTopic.objects.filter(topic_id=topic_id, showw_id=show_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    item = ShowTopic.objects.get(topic_id=topic_id, show_id=show_id)
+    item = ShowTopic.objects.get(topic_id=topic_id, showw_id=show_id)
+    item.is_main = 1
+    item.save
 
     serializer = ShowTopicSerializer(item, data=request.data, many=False, partial=True)
 
