@@ -6,7 +6,7 @@ from rest_framework import serializers
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topics
-        fields = "__all__"
+        fields = "__all_"
 
 
 class ShowSerializer(serializers.ModelSerializer):
