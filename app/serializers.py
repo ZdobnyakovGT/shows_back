@@ -1,13 +1,19 @@
 from .models import *
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from collections import OrderedDict
 
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topics
-        fields = "__all_"
-
+        fields = "__all__"
+        def get_fields(self):
+            new_fields = OrderedDict()
+            for name, field in super().get_fields().items():
+                field.required = False
+                new_fields[name] = field
+            return new_fields 
 
 class ShowSerializer(serializers.ModelSerializer):
     topics = serializers.SerializerMethodField()
@@ -30,6 +36,12 @@ class ShowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shows
         fields = '__all__'
+        def get_fields(self):
+            new_fields = OrderedDict()
+            for name, field in super().get_fields().items():
+                field.required = False
+                new_fields[name] = field
+            return new_fields
 
 
 class ShowsSerializer(serializers.ModelSerializer):
@@ -46,18 +58,36 @@ class ShowsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shows
         fields = "__all__"
+        def get_fields(self):
+            new_fields = OrderedDict()
+            for name, field in super().get_fields().items():
+                field.required = False
+                new_fields[name] = field
+            return new_fields
 
 
 class ShowTopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShowTopic
         fields = "__all__"
+        def get_fields(self):
+            new_fields = OrderedDict()
+            for name, field in super().get_fields().items():
+                field.required = False
+                new_fields[name] = field
+            return new_fields
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'password', 'first_name', 'last_name', 'date_joined', 'password', 'username')
+        def get_fields(self):
+            new_fields = OrderedDict()
+            for name, field in super().get_fields().items():
+                field.required = False
+                new_fields[name] = field
+            return new_fields
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -66,6 +96,12 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         fields = ('id', 'email', 'password', 'first_name', 'last_name', 'username')
         write_only_fields = ('password',)
         read_only_fields = ('id',)
+        def get_fields(self):
+            new_fields = OrderedDict()
+            for name, field in super().get_fields().items():
+                field.required = False
+                new_fields[name] = field
+            return new_fields
 
     def create(self, validated_data):
         user = User.objects.create(
@@ -79,3 +115,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+    
+
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
+    

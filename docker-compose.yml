@@ -12,9 +12,9 @@ services:
     depends_on:
       - pgdb
       - minio
+      - redis
 
   pgdb:
-    # image: postgres
     image: postgres:16.0-alpine
     container_name: pgdb
     environment:
@@ -53,6 +53,16 @@ services:
     command: server --console-address ":9001" /data
     env_file: .env
     restart: always
+  
+  redis:
+    depends_on:
+      - pgdb
+    image: 'bitnami/redis:latest'
+    container_name: redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - 6379:6379
 
 
 volumes:

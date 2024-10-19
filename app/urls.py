@@ -5,7 +5,6 @@ urlpatterns = [
     # Набор методов для услуг
     path('api/topics/search/', search_topic),  # GET
     path('api/topics/<int:topic_id>/', get_topic_by_id),  # GET
-    # path('api/topics/<int:topic_id>/image/', get_topic_image),  # GET
     path('api/topics/<int:topic_id>/update/', update_topic),  # PUT
     path('api/topics/<int:topic_id>/update_image/', update_topic_image),  # POST
     path('api/topics/<int:topic_id>/delete/', delete_topic),  # DELETE
@@ -26,5 +25,7 @@ urlpatterns = [
 
     # Набор методов пользователей
     path('api/users/register/', register), # POST
+    path("api/users/login/", login),  # POST
+    path("api/users/logout/", logout),  # POST
     path('api/users/<int:user_id>/update/', update_user), # PUT
 ]

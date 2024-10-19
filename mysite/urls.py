@@ -1,22 +1,33 @@
-# from django.contrib import admin
-# from django.urls import path
-# from app import views
-
-# urlpatterns = [
-#     path('admin/', admin.site.urls),
-#     path('', views.GetShow),
-#     path('info/<int:id>/', views.Info, name='info_url'),
-#     path('show/<int:show_id>/', views.show, name='cart_by_id'),
-#     path('topic/<int:topic_id>/add_to_show/', views.add_topic),
-#     path('show/<int:show_id>/delete/', views.delete_show)
-# ]
-
-
-
 from django.contrib import admin
+from rest_framework import permissions
 from django.urls import path, include
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Snippets API",
+      default_version='v1',
+      description="Test description",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="contact@snippets.local"),
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
+
+
+
+
+
+
+
+
 
 urlpatterns = [
     path('', include('app.urls')),
-    path('admin/', admin.site.urls)
+    path('admin/', admin.site.urls),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui')
 ]
