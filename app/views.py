@@ -157,6 +157,23 @@ def add_topic_to_show(request, topic_id):
 
 
 # изменить избр
+# @api_view(["POST"])
+# @permission_classes([IsModerator])
+# def update_topic_image(request, topic_id):
+#     if not Topics.objects.filter(topic_id=topic_id).exists():
+#         return Response(status=status.HTTP_404_NOT_FOUND)
+
+#     topic = Topics.objects.get(topic_id=topic_id)
+
+#     image = request.data.get("photo_url")
+#     if image is not None:
+#         topic.photo_url = image
+#         topic.save()
+
+#     serializer = TopicSerializer(topic)
+
+#     return Response(serializer.data)
+
 @api_view(["POST"])
 @permission_classes([IsModerator])
 def update_topic_image(request, topic_id):
@@ -165,8 +182,10 @@ def update_topic_image(request, topic_id):
 
     topic = Topics.objects.get(topic_id=topic_id)
 
-    image = request.data.get("photo_url")
+    # Получаем файл из запроса
+    image = request.FILES.get('image')
     if image is not None:
+        # Сохраняем изображение в поле photo_url
         topic.photo_url = image
         topic.save()
 

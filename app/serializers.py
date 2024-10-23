@@ -7,7 +7,7 @@ from collections import OrderedDict
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topics
-        fields = "__all__"
+        fields = ('topic_id', 'name', 'description', 'photo_url')
         def get_fields(self):
             new_fields = OrderedDict()
             for name, field in super().get_fields().items():
@@ -19,6 +19,7 @@ class ShowSerializer(serializers.ModelSerializer):
     topics = serializers.SerializerMethodField()
     creator = serializers.SerializerMethodField()
     moderator = serializers.SerializerMethodField()
+    topics_count = serializers.SerializerMethodField()
 
     def get_creator(self, show):
         return show.creator.username
@@ -26,8 +27,10 @@ class ShowSerializer(serializers.ModelSerializer):
     def get_moderator(self, show):
         if show.moderator:
             return show.moderator.username
+    
+    def get_topics_count(self, show):
+        return ShowTopic.objects.filter(showw=show).count()
         
-            
     def get_topics(self, show):
         items = ShowTopic.objects.filter(showw=show)
         serializer = TopicSerializer([item.topic for item in items], many=True)
@@ -36,6 +39,7 @@ class ShowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shows
         fields = '__all__'
+        extra_fields = ['topics_count']
         def get_fields(self):
             new_fields = OrderedDict()
             for name, field in super().get_fields().items():
@@ -47,6 +51,7 @@ class ShowSerializer(serializers.ModelSerializer):
 class ShowsSerializer(serializers.ModelSerializer):
     creator = serializers.SerializerMethodField()
     moderator = serializers.SerializerMethodField()
+    topics_count = serializers.SerializerMethodField()
 
     def get_creator(self, show):
         return show.creator.username
@@ -54,10 +59,14 @@ class ShowsSerializer(serializers.ModelSerializer):
     def get_moderator(self, show):
         if show.moderator:
             return show.moderator.username
+        
+    def get_topics_count(self, show):
+        return ShowTopic.objects.filter(showw=show).count()
 
     class Meta:
         model = Shows
         fields = "__all__"
+        extra_fields = ['topics_count']
         def get_fields(self):
             new_fields = OrderedDict()
             for name, field in super().get_fields().items():
@@ -120,4 +129,3 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
-    
