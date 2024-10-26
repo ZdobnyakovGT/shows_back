@@ -398,7 +398,9 @@ def login(request):
 
     response = Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    response.set_cookie('access_token', access_token, httponly=True)
+    # response.set_cookie('access_token', access_token, httponly=True)
+    response.set_cookie('session', access_token, httponly=True)
+
 
     return response
 
@@ -419,7 +421,9 @@ def register(request):
 
     response = Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    response.set_cookie('access_token', access_token, httponly=True)
+    # response.set_cookie('access_token', access_token, httponly=True)
+    response.set_cookie('session', access_token, httponly=True)
+
 
     return response
 
