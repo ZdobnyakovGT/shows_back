@@ -9,7 +9,7 @@
     height: 380px;
     background-color: #D0B175;
     border-radius: 20px;
-    text-align: center;
+    text-align: center; 
     padding: 10px;
     display: flex;
     flex-direction: column;
