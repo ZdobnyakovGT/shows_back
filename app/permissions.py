@@ -13,8 +13,11 @@ class IsAuthenticated(BasePermission):
         if token is None:
             return False
 
-        if token in cache:
-            return None
+        # if token in cache:
+        #     return None
+        
+        if cache.get(token):
+            return False
 
         try:
             payload = get_jwt_payload(token)
@@ -36,8 +39,11 @@ class IsModerator(BasePermission):
         if token is None:
             return False
 
-        if token in cache:
-            return None
+        # if token in cache:
+        #     return None
+        
+        if cache.get(token):
+            return False
 
         try:
             payload = get_jwt_payload(token)

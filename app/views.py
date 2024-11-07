@@ -3,6 +3,7 @@ import requests
 from django.contrib.auth import authenticate
 from django.shortcuts import render, redirect, get_object_or_404
 from datetime import date
+import random
 import psycopg2
 from django.db import connection
 from .models import Shows, Topics, ShowTopic
@@ -18,6 +19,7 @@ from .jwt_helper import *
 from .permissions import *
 from .serializers import *
 from .utils import identity_user
+from django.core.cache import cache
 from rest_framework.decorators import api_view, permission_classes
 
 
@@ -156,24 +158,6 @@ def add_topic_to_show(request, topic_id):
     return Response(serializer.data["topics"])
 
 
-# изменить избр
-# @api_view(["POST"])
-# @permission_classes([IsModerator])
-# def update_topic_image(request, topic_id):
-#     if not Topics.objects.filter(topic_id=topic_id).exists():
-#         return Response(status=status.HTTP_404_NOT_FOUND)
-
-#     topic = Topics.objects.get(topic_id=topic_id)
-
-#     image = request.data.get("photo_url")
-#     if image is not None:
-#         topic.photo_url = image
-#         topic.save()
-
-#     serializer = TopicSerializer(topic)
-
-#     return Response(serializer.data)
-
 @api_view(["POST"])
 @permission_classes([IsModerator])
 def update_topic_image(request, topic_id):
@@ -297,6 +281,7 @@ def update_status_admin(request, show_id):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     show.completed_at = timezone.now()
+    show.visitors = random.randint(1, 100)
     show.status = request_status
     show.moderator = identity_user(request)
     show.save()
@@ -434,9 +419,15 @@ def logout(request):
     access_token = get_access_token(request)
 
     if access_token not in cache:
-        cache.set(access_token, settings.JWT["ACCESS_TOKEN_LIFETIME"])
+        # cache.set(access_token,  settings.JWT["ACCESS_TOKEN_LIFETIME"])
+        payload = get_jwt_payload(access_token)
+        user_id = payload.get("user_id")
+        cache.set(access_token, user_id, timeout=settings.JWT["ACCESS_TOKEN_LIFETIME"].total_seconds())
+
+
 
     return Response(status=status.HTTP_200_OK)
+
 
 
 @swagger_auto_schema(method='PUT', request_body=UserSerializer)

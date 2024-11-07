@@ -5,9 +5,18 @@ from collections import OrderedDict
 
 
 class TopicSerializer(serializers.ModelSerializer):
+    is_main = serializers.SerializerMethodField()
+
+    def get_is_main(self, topic):
+        # Получаем show из контекста и проверяем связь с темой
+        show = self.context.get("show")
+        if show:
+            show_topic = ShowTopic.objects.filter(showw=show, topic=topic).first()
+            return show_topic.is_main if show_topic else None
+        return None
     class Meta:
         model = Topics
-        fields = ('topic_id', 'name', 'description', 'photo_url')
+        fields = ('topic_id', 'name', 'description', 'photo_url', 'is_main')
         def get_fields(self):
             new_fields = OrderedDict()
             for name, field in super().get_fields().items():

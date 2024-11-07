@@ -30,6 +30,7 @@ class Shows(models.Model):
     show_name = models.CharField(max_length=100, blank=True, null=True)
     show_place = models.CharField(max_length=100, blank=True, null=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=1)
+    visitors = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'shows'
