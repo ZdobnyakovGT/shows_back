@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from collections import OrderedDict
 
-
+ 
 class TopicSerializer(serializers.ModelSerializer):
     is_main = serializers.SerializerMethodField()
 

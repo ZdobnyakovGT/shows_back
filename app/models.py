@@ -59,8 +59,8 @@ class Topics(models.Model):
     topic_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, blank=True, null=True)
     description = models.CharField(max_length=500, blank=True, null=True)
-    # photo_url = models.CharField(max_length=100, blank=True, null=True)
-    photo_url = models.ImageField(upload_to='images/', null=True, blank=True)
+    photo_url = models.CharField(max_length=100, blank=True, null=True)
+    # photo_url = models.ImageField(upload_to='images/', null=True, blank=True)
     status = models.CharField(max_length=100, choices=STATUS_CHOICES, default='1')  # Используйте choices
 
     class Meta:
