@@ -3,12 +3,11 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from collections import OrderedDict
 
- 
+  
 class TopicSerializer(serializers.ModelSerializer):
     is_main = serializers.SerializerMethodField()
 
     def get_is_main(self, topic):
-        # Получаем show из контекста и проверяем связь с темой
         show = self.context.get("show")
         if show:
             show_topic = ShowTopic.objects.filter(showw=show, topic=topic).first()

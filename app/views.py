@@ -1,9 +1,12 @@
 from django.http import HttpResponse
 import requests
-from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 from datetime import date
+import uuid
 import random
+import redis
 import psycopg2
 from django.db import connection
 from .models import Shows, Topics, ShowTopic
@@ -15,16 +18,26 @@ from django.utils.dateparse import parse_datetime
 from .serializers import *
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from .jwt_helper import *
 from .permissions import *
+import logging
 from .serializers import *
-from .utils import identity_user
 from django.core.cache import cache
 from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth import logout as django_logout
 
+
+logger = logging.getLogger(__name__)
+session_storage = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
 
 def get_draft_show(request):
-    user = identity_user(request)
+    try:
+        username = session_storage.get(request.COOKIES["session_id"])
+        username = username.decode('utf-8')
+    except:
+        return Response({"Message":"Нет авторизованных пользователей"})
+    
+    user = get_object_or_404(User, username=username)
+
 
     if user is None:
         return None
@@ -44,6 +57,8 @@ def get_draft_show(request):
         )
     ]
 )
+
+
 @api_view(["GET"])
 def search_topic(request):
     topic_name = request.GET.get("topic_name", "")
@@ -56,6 +71,7 @@ def search_topic(request):
     serializer = TopicSerializer(topics, many=True)
 
     draft_show = get_draft_show(request)
+
 
     resp = {
         "topics": serializer.data,
@@ -88,7 +104,7 @@ def update_topic(request, topic_id):
 
     topic = Topics.objects.get(pk=topic_id)
 
-    name = request.data.get("name")
+    name = request.data.get["name"]
     if name is not None:
         topic.name = name
         topic.save()
@@ -132,16 +148,26 @@ def delete_topic(request, topic_id):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_topic_to_show(request, topic_id):
+
+    try:
+        username = session_storage.get(request.COOKIES["session_id"])
+        username = username.decode('utf-8')
+    except:
+        return Response({"Message":"Нет авторизованных пользователей"})
+    
+    user = get_object_or_404(User, username=username)
+
+
     if not Topics.objects.filter(topic_id=topic_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     topic = Topics.objects.get(topic_id=topic_id)
 
-    draft_show = get_draft_show(request)
+    draft_show = Shows.objects.filter(creator=user).filter(status=1).first()
 
     if draft_show is None:
         draft_show = Shows.objects.create(
-            creator=identity_user(request)
+            creator=user
         )
         draft_show.save()
 
@@ -188,7 +214,14 @@ def search_shows(request):
 
     shows = Shows.objects.exclude(status__in=[1, 5])
 
-    user = identity_user(request)
+    try:
+        username = session_storage.get(request.COOKIES["session_id"])
+        username = username.decode('utf-8')
+    except:
+        return Response({"Message":"Нет авторизованных пользователей"})
+    
+    user = get_object_or_404(User, username=username)
+    
     if not user.is_staff:
         shows = shows.filter(creator=user)
 
@@ -210,7 +243,10 @@ def search_shows(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_show_by_id(request, show_id):
-    user = identity_user(request)
+
+    username = session_storage.get(request.COOKIES["session_id"])
+    username = username.decode('utf-8')
+    user = get_object_or_404(User, username=username)
 
     if not Shows.objects.filter(show_id=show_id, creator=user).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -226,7 +262,13 @@ def get_show_by_id(request, show_id):
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_show(request, show_id):
-    user = identity_user(request)
+    try:
+        username = session_storage.get(request.COOKIES["session_id"])
+        username = username.decode('utf-8')
+    except:
+        return Response({"Message":"Нет авторизованных пользователей"})
+    
+    user = get_object_or_404(User, username=username)
 
     if not Shows.objects.filter(show_id=show_id, creator=user).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -244,7 +286,13 @@ def update_show(request, show_id):
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_status_user(request, show_id):
-    user = identity_user(request)
+    try:
+        username = session_storage.get(request.COOKIES["session_id"])
+        username = username.decode('utf-8')
+    except:
+        return Response({"Message":"Нет авторизованных пользователей"})
+    
+    user = get_object_or_404(User, username=username)
 
     if not Shows.objects.filter(show_id=show_id, creator=user).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -264,26 +312,35 @@ def update_status_user(request, show_id):
 
 
 # статус выполнено
+@swagger_auto_schema(method='put', request_body=ShowSerializer)
 @api_view(["PUT"])
 @permission_classes([IsModerator])
 def update_status_admin(request, show_id):
     if not Shows.objects.filter(show_id=show_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
+    
 
+    show = Shows.objects.get(show_id=show_id)
+
+    
     request_status = int(request.data["status"])
 
     if request_status not in [3, 4]:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    show = Shows.objects.get(show_id=show_id)
+
 
     if show.status != 2:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+    username = session_storage.get(request.COOKIES["session_id"])
+    username = username.decode('utf-8')
 
+    user = User.objects.get(username=username)
     show.completed_at = timezone.now()
     show.visitors = random.randint(1, 100)
     show.status = request_status
-    show.moderator = identity_user(request)
+    show.moderator = user
     show.save()
 
     serializer = ShowSerializer(show)
@@ -295,7 +352,13 @@ def update_status_admin(request, show_id):
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_show(request, show_id):
-    user = identity_user(request)
+    try:
+        username = session_storage.get(request.COOKIES["session_id"])
+        username = username.decode('utf-8')
+    except:
+        return Response({"Message":"Нет авторизованных пользователей"})
+    
+    user = get_object_or_404(User, username=username)
 
     if not Shows.objects.filter(show_id=show_id, creator=user).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -315,8 +378,14 @@ def delete_show(request, show_id):
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_topic_from_show(request, showw, topic_id):
-    user = identity_user(request)
+    try:
+        username = session_storage.get(request.COOKIES["session_id"])
+        username = username.decode('utf-8')
+    except:
+        return Response({"Message":"Нет авторизованных пользователей"})
     
+    user = get_object_or_404(User, username=username)
+
     if not Shows.objects.filter(pk=showw, creator=user).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -343,7 +412,13 @@ def delete_topic_from_show(request, showw, topic_id):
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_topic_in_show(request, show_id, topic_id):
-    user = identity_user(request)
+    try:
+        username = session_storage.get(request.COOKIES["session_id"])
+        username = username.decode('utf-8')
+    except:
+        return Response({"Message":"Нет авторизованных пользователей"})
+    
+    user = get_object_or_404(User, username=username)
     
     if not Shows.objects.filter(pk=show_id, creator=user).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -367,66 +442,86 @@ def update_topic_in_show(request, show_id, topic_id):
 @swagger_auto_schema(method='post', request_body=UserLoginSerializer)
 @api_view(["POST"])
 def login(request):
-    serializer = UserLoginSerializer(data=request.data)
+    try:
+        if request.COOKIES["session_id"] is not None:
+            return Response({'status': 'Уже в системе'}, status=status.HTTP_403_FORBIDDEN)
+    except:
+        username = str(request.data["username"]) 
+        password = request.data["password"]
+        user = authenticate(request, username=username, password=password)
+        logger.error(user)
+        if user is not None:
+            random_key = str(uuid.uuid4()) 
+            session_storage.set(random_key, username)
 
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
+            response = Response({'status': f'{username} успешно вошел в систему'})
+            response.set_cookie("session_id", random_key)
 
-    user = authenticate(**serializer.data)
-
-    if user is None:
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
-    access_token = create_access_token(user.id)
-
-    serializer = UserSerializer(user)
-
-    response = Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # response.set_cookie('access_token', access_token, httponly=True)
-    response.set_cookie('session', access_token, httponly=True)
-
-
-    return response
+            return response
+        else:
+            return HttpResponse("{'status': 'error', 'error': 'login failed'}")
 
 
 @swagger_auto_schema(method='post', request_body=UserRegisterSerializer)
 @api_view(["POST"])
 def register(request):
-    serializer = UserRegisterSerializer(data=request.data)
+    try:
+        if request.COOKIES["session_id"] is not None:
+            return Response({'status': 'Уже в системе'}, status=status.HTTP_403_FORBIDDEN)
+    except:
+        if User.objects.filter(username = request.data['username']).exists(): 
+            return Response({'status': 'Exist'}, status=400)
+        serializer = UserRegisterSerializer(data=request.data) 
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
 
-    if not serializer.is_valid():
-        return Response(status=status.HTTP_409_CONFLICT)
-
-    user = serializer.save()
-
-    access_token = create_access_token(user.id)
-
-    serializer = UserSerializer(user)
-
-    response = Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # response.set_cookie('access_token', access_token, httponly=True)
-    response.set_cookie('session', access_token, httponly=True)
-
-
-    return response
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def logout(request):
-    access_token = get_access_token(request)
+    # try:
+    #     username = session_storage.get(request.COOKIES["session_id"])
+    #     username = username.decode('utf-8')
+    #     logout(request._request)
+    #     response = Response({'Message': f'{username} вышел из системы'})
+    #     response.delete_cookie('session_id')
+    #     return response
+    # except:
+    #     return Response({"Message":"Нет авторизованных пользователей"})
+    try:
+        # Получаем session_id из cookies
+        session_id = request.COOKIES.get("session_id")
+        if not session_id:
+            return Response({"Message": "Сессия не найдена"}, status=400)
+        
+        # Извлекаем имя пользователя из Redis
+        username = session_storage.get(session_id)
+        if not username:
+            return Response({"Message": "Пользователь не найден в сессии"}, status=400)
 
-    if access_token not in cache:
-        # cache.set(access_token,  settings.JWT["ACCESS_TOKEN_LIFETIME"])
-        payload = get_jwt_payload(access_token)
-        user_id = payload.get("user_id")
-        cache.set(access_token, user_id, timeout=settings.JWT["ACCESS_TOKEN_LIFETIME"].total_seconds())
+        username = username.decode('utf-8')
+        
+        # Вызов стандартного logout для завершения сессии
+        django_logout(request)
 
+        # Формируем ответ
+        response = Response({'Message': f'{username} вышел из системы'}, status=200)
 
+        # Удаляем cookie с session_id
+        response.delete_cookie('session_id')
+        
+        return response
 
-    return Response(status=status.HTTP_200_OK)
+    except KeyError as e:
+        # Ошибка, если нет cookies или проблем с извлечением данных из Redis
+        return Response({"Message": "Нет авторизованных пользователей"}, status=403)
+
+    except Exception as e:
+        # Логирование ошибки (например, ошибка Redis)
+        return Response({"Message": f"Ошибка: {str(e)}"}, status=500)
 
 
 
@@ -437,7 +532,13 @@ def update_user(request, user_id):
     if not User.objects.filter(pk=user_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    user = identity_user(request)
+    try:
+        username = session_storage.get(request.COOKIES["session_id"])
+        username = username.decode('utf-8')
+    except:
+        return Response({"Message":"Нет авторизованных пользователей"})
+    
+    user = get_object_or_404(User, username=username)
 
     if user.pk != user_id:
         return Response(status=status.HTTP_404_NOT_FOUND)
