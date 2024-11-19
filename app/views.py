@@ -30,21 +30,37 @@ logger = logging.getLogger(__name__)
 session_storage = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
 
 def get_draft_show(request):
-    try:
-        username = session_storage.get(request.COOKIES["session_id"])
-        username = username.decode('utf-8')
-    except:
-        return Response({"Message":"Нет авторизованных пользователей"})
+    # try:
+    #     username = session_storage.get(request.COOKIES["session_id"])
+    #     username = username.decode('utf-8')
+    # except:
+    #     return Response({"Message":"Нет авторизованных пользователей"})
     
-    user = get_object_or_404(User, username=username)
+    # user = get_object_or_404(User, username=username)
 
 
-    if user is None:
-        return None
+    # if user is None:
+    #     return None
 
-    show = Shows.objects.filter(creator=user).filter(status=1).first()
+    # show = Shows.objects.filter(creator=user).filter(status=1).first()
 
-    return show
+    # return show
+
+    session_id = request.COOKIES.get("session_id")
+    if not session_id:
+        return None  # возвращаем None, если session_id отсутствует
+
+    username = session_storage.get(session_id)
+    if not username:
+        return None  # возвращаем None, если пользователь не найден в сессии
+
+    username = username.decode('utf-8')
+    try:
+        current_user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return None  # возвращаем None, если пользователь не найден в базе данных
+
+    return Shows.objects.filter(creator=current_user, status=1).first()  # возвращаем первый черновик или None
 
 
 @swagger_auto_schema(
