@@ -146,3 +146,14 @@ AWS_S3_CUSTOM_DOMAIN = f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}"
 
 REDIS_HOST = 'redis'
 REDIS_PORT = 6379
+
+
+CORS_ALLOW_ALL_ORIGINS = True
+INSTALLED_APPS += ["corsheaders"]
+MIDDLEWARE.insert(0, "corsheaders.middleware.CorsMiddleware")
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # для фронтенда на dev-сервере
+    "tauri://localhost"      # для Tauri-приложения
+]
+
